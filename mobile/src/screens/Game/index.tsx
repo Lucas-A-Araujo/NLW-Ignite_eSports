@@ -14,17 +14,28 @@ import { GameParams } from "../../@types/navigation";
 import { Heading } from "../../components/Heading";
 import { Background } from "../../components/Background";
 import { DuoCard, DuoCardProps } from "../../components/DuoCard";
+import { DuoMatch } from "../../components/DuoMatch";
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([])
+  const [discordDuoSelected, setDiscordDuoSelected] = useState('');
 
   const navigation = useNavigation();
   const router = useRoute();
   const game = router.params as GameParams;
 
+
   function handleGoBack() {
     navigation.goBack();
   }
+
+  async function getDiscordUser(adsId: string) {
+    fetch(`http://192.168.100.5:3333/ads/${adsId}/discord`)
+      .then((response) => response.json())
+      .then((data) => {
+        setDiscordDuoSelected(data.discord);
+      });
+  };
 
   useEffect(() => {
     fetch(`http://192.168.100.5:3333/games/${game.id}/ads`) //Aqui você deve colocar o seu endereço IP, se não funcionar coloque o IPV4
@@ -69,7 +80,7 @@ export function Game() {
           renderItem={({ item }) => (
             <DuoCard
               data={item}
-              onConnect={() => {}}
+              onConnect={() => getDiscordUser(item.id)}
             />
           )}
           horizontal
@@ -81,6 +92,12 @@ export function Game() {
               Não há anúncios publicados ainda.
             </Text>
           }
+        />
+
+        <DuoMatch
+          visible={discordDuoSelected.length > 0}
+          discord={discordDuoSelected}
+          onClose={() => setDiscordDuoSelected('')}
         />
       </SafeAreaView>
     </Background>
